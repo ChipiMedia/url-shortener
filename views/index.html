@@ -1,32 +1,135 @@
 <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>URL Shortener Microservice</title>
+  <link rel="icon" type="image/png" href="https://cdn.freecodecamp.org/universal/favicons/favicon-16x16.png">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+    }
+    h1 {
+      color: #007bff;
+      margin-top: 20px;
+    }
+    main {
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      max-width: 600px;
+      width: 90%;
+    }
+    form {
+      margin: 20px 0;
+    }
+    fieldset {
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 8px;
+    }
+    legend {
+      font-size: 1.2rem;
+      color: #007bff;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input[type="text"] {
+      width: calc(100% - 20px);
+      padding: 10px;
+      font-size: 1rem;
+      margin-bottom: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    input[type="submit"] {
+      background: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    input[type="submit"]:hover {
+      background: #0056b3;
+    }
+    .result {
+      margin-top: 20px;
+      background: #f4f4f9;
+      padding: 10px;
+      border-radius: 5px;
+      font-family: monospace;
+    }
+    .footer {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      color: #666;
+    }
+    .footer a {
+      color: #007bff;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>URL Shortener Microservice</h1>
+  <main>
+    <section>
+      <form id="url-form">
+        <fieldset>
+          <legend>Shorten Your URL</legend>
+          <label for="url_input">Enter a valid URL:</label>
+          <input id="url_input" type="text" name="url" placeholder="https://www.example.com">
+          <input type="submit" value="Shorten URL">
+        </fieldset>
+      </form>
+      <div id="result" class="result"></div>
+    </section>
+  </main>
+  <footer>
+    <p>By <a href="https://github.com/ChipiMedia">Chipi Media</a></p>
+  </footer>
+  <script>
+    document.getElementById('url-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const urlInput = document.getElementById('url_input');
+      const resultDiv = document.getElementById('result');
+      const url = urlInput.value;
 
-<html>
-  <head>
-    <title>URL Shortener Microservice | freeCodeCamp.org</title>
-    <link
-      rel="icon"
-      type="image/png"
-      href="https://cdn.freecodecamp.org/universal/favicons/favicon-16x16.png"
-    />
-    <link href="/public/style.css" rel="stylesheet" type="text/css" />
-  </head>
+      try {
+        const response = await fetch('/api/shorturl', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          body: `url=${encodeURIComponent(url)}`
+        });
+        const data = await response.json();
 
-  <body>
-    <h1>URL Shortener Microservice</h1>
-    <main>
-      <section>
-        <form action="api/shorturl" method="POST">
-          <fieldset>
-            <legend>URL Shortener</legend>
-            <label for="url_input">URL:</label>
-            <input id="url_input" type="text" name="url" placeholder="https://www.freecodecamp.org/" />
-            <input type="submit" value="POST URL" />
-          </fieldset>
-        </form>
-      </section>
-    </main>
-    <footer>
-      <p>By <a href="https://www.freecodecamp.org/">freeCodeCamp</a></p>
-    </footer>
-  </body>
+        if (data.error) {
+          resultDiv.innerHTML = `<p style="color: red;">Error: ${data.error}</p>`;
+        } else {
+          resultDiv.innerHTML = `<p>Original URL: <a href="${data.original_url}" target="_blank">${data.original_url}</a></p>
+          <p>Short URL: <a href="/api/shorturl/${data.short_url}" target="_blank">/api/shorturl/${data.short_url}</a></p>`;
+        }
+      } catch (err) {
+        resultDiv.innerHTML = `<p style="color: red;">An error occurred. Please try again.</p>`;
+      }
+    });
+  </script>
+</body>
 </html>
+
